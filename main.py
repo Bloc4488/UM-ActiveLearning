@@ -1,3 +1,4 @@
+import csv
 import pandas as pd
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -65,6 +66,15 @@ print("Data successfully vectorized")
 
 rskf = RepeatedStratifiedKFold(n_splits=5, n_repeats=2, random_state=1234)
 
+result = pd.DataFrame(columns=[
+    'sampling',
+    'budget',
+    'query',
+    'initial_data',
+    'score'
+    'mean_score'
+])
+
 for sampling in samplings:
     for budget in budgets:
         for n_queires in n_queiress:
@@ -80,5 +90,18 @@ for sampling in samplings:
                 result_line = (f'For model {model} using sampling {sampling} with budget {budget} and iterations '
                                 f'{n_queires} for initial data {n_initial} mean score is {np.mean(score): .4f} \n')
                 print(result_line)
-                with open('results.txt', 'a') as f:
-                    f.write(result_line)
+                new_row = {
+                    'model': model.__class__.__name__,
+                    'sampling': sampling.__name__,
+                    'budget': budget,
+                    'query': n_queires,
+                    'initial_data': n_initial,
+                    'score': score,
+                    'mean': np.mean(score)
+                }
+                result = pd.concat([result, pd.DataFrame([new_row])], ignore_index=True)
+                '''with open('results.csv', 'a', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow([sampling, budget, n_queires, n_initial, score])'''
+
+result.to_csv('result.csv', index=False)
